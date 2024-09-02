@@ -87,7 +87,7 @@ public class MainController {
 	      return mv;
 	   }
 	
-	// 로그인
+	// 로그인 구현
 	@RequestMapping("/member/loginAction.do")
 	public ModelAndView loginAction(HttpSession session, @RequestParam HashMap<String, Object> paramMap) {
 		ModelAndView mv = new ModelAndView();
