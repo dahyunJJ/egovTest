@@ -1,0 +1,5 @@
+.classpath
+.settings/
+.project
+*/target/*
+sample/target/m2e-wtp/web-resources/META-INF/maven/sample/sample/pom.properties
