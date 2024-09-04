@@ -11,7 +11,14 @@
 	$(document).ready(function() {
 		$("#btn_logout").on('click', function() {
 			fn_logout();
-		})
+		});
+		
+		$("#btn_mypage").on('click', function() {
+			var frm = $("#logoutFrm");
+			frm.attr("method", "POST");
+			frm.attr("action", "/mypage.do");
+			frm.submit();
+		});		
 	});
 	
 	function fn_logout() {
@@ -26,7 +33,9 @@
 	<header>
 		<form id="logoutFrm" name="logoutFrm">		
 		</form>
-		<label style="color:blue; font-weight:bold;">${loginInfo.name}</label>님 환영합니다.
+		<label style="color:blue; font-weight:bold;">${loginInfo.name}</label>
+		<span>님 환영합니다.</span>
+		<input type="button" id="btn_mypage" name="btn_mypage" value="마이페이지" />
 		<input type="button" id="btn_logout" name="btn_logout" value="로그아웃" />
 	</header>
 </body>
