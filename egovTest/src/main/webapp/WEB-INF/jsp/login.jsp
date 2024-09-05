@@ -28,7 +28,7 @@
 		    dataType : 'json',
 		    success: function (data, status, xhr) {
 		    	if(data.resultChk) {
-		    		location.href = "/main.do";
+		    		location.href = "/board/boardList.do";
 		    	} else {
 		    		alert("로그인에 실패하였습니다.");
 		    		return;
