@@ -24,6 +24,7 @@
 	});
 	
 	function fn_selectList(pageIndex){
+		$("#pageIndex").val(pageIndex);
 		var frm = $("#searchFrm").serialize();
 		$.ajax({
 		    url: '/board/selectBoardList.do',
@@ -31,6 +32,34 @@
 		    data : frm,
 		    dataType : 'json',
 		    success: function (data, status, xhr) {
+		    	var boardHtml = '';
+		    	if(data.list.length > 0) {
+		    		for(var i = 0; i < data.list.length; i++) {
+		    		boardHtml += '<tr>';
+		    		boardHtml += '<td>';	    			
+		    		boardHtml += data.list[i].rnum;	    			
+		    		boardHtml += '</td>';	    			
+		    		boardHtml += '<td>';	    			
+		    		boardHtml += '<a href="javascript:fn_detail(\''+data.list[i].boardIdx+'\');">';	// \' -> 작은따옴표로 인식    			
+		    		boardHtml += data.list[i].boardTitle;	    			
+		    		boardHtml += '</a>';	    			
+		    		boardHtml += '</td>';	    			
+		    		boardHtml += '<td>';	    			
+		    		boardHtml += data.list[i].createId;	    			
+		    		boardHtml += '</td>';	    			
+		    		boardHtml += '<td>';	    			
+		    		boardHtml += data.list[i].createDate;	    			
+		    		boardHtml += '</td>';	    			
+		    		boardHtml += '</tr>';
+		    		}
+		    	} else {
+		    		boardHtml += '<tr>';
+		    		boardHtml += '<td colspan="4" style="text-align:center;">조회된 결과가 없습니다.</td>';
+		    		boardHtml += '</tr>';
+		    	}
+		    	
+		    	$("#tbody").html(boardHtml);
+		    	fn_paging(data.paginationInfo);
 		    	
 		    },
 		    error: function (data, status, err) {
@@ -39,8 +68,12 @@
 		});
 	}
 	
+	// 게시물 상세
 	function fn_detail(boardIdx){
-
+		$("#boardIdx").val(boardIdx);
+		var frm = $("#boardFrm");
+		frm.attr("action", "/board/boardDetail.do");
+		frm.submit();
 	}
 	
 	function fn_insert(){

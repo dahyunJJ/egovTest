@@ -37,6 +37,22 @@ public class BoardController {
 	public ModelAndView selectBoardList(@RequestParam HashMap<String, Object> paramMap) {
 		ModelAndView mv = new ModelAndView();
 		
+		PaginationInfo paginationInfo = new PaginationInfo();
+		paginationInfo.setCurrentPageNo(Integer.parseInt(paramMap.get("pageIndex").toString()));
+		paginationInfo.setRecordCountPerPage(10); // recordCountPerPage : 한 페이지당 게시되는 게시물 건 수
+		paginationInfo.setPageSize(10); // pageSize : 페이지 리스트에 게시되는 페이지 건수
+		
+		paramMap.put("firstIndex", paginationInfo.getFirstRecordIndex());
+		paramMap.put("lastIndex", paginationInfo.getLastRecordIndex());
+		paramMap.put("recordCountPerPage", paginationInfo.getRecordCountPerPage());
+		
+		List<HashMap<String, Object>> list = boardService.selectBoardList(paramMap);
+		int totCnt = boardService.selectBoardListCnt(paramMap);
+		paginationInfo.setTotalRecordCount(totCnt);
+		
+		mv.addObject("list", list);
+		mv.addObject("totCnt", totCnt);
+		mv.addObject("paginationInfo", paginationInfo);
 		
 		mv.setViewName("jsonView");
 		return mv;
@@ -47,8 +63,13 @@ public class BoardController {
 		HashMap<String, Object> loginInfo = null;
 		loginInfo = (HashMap<String, Object>) session.getAttribute("loginInfo");
 		if(loginInfo != null) {
-			model.addAttribute("boardIdx", boardIdx);
+			
+			HashMap<String, Object> boardInfo = boardService.selectBoardDetail(boardIdx);			
+			model.addAttribute("boardIdx", boardIdx); // 추후 게시글에서 새로운 기능을 만들 때 확장성을 위해 idx값 따로 넘겨놓기
+			model.addAttribute("boardInfo", boardInfo);
+						
 			return "board/boardDetail";
+			
 		}else {
 			return "redirect:/login.do";
 		}
