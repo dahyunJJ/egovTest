@@ -58,31 +58,50 @@ public class BoardController {
 		return mv;
 	}
 	
+	// frm을 넘겨 받아 화면 전환하는 용도
 	@RequestMapping("/board/boardDetail.do")
 	public String boardDetail(@RequestParam(name="boardIdx") int boardIdx, Model model, HttpSession session) {
 		HashMap<String, Object> loginInfo = null;
-		loginInfo = (HashMap<String, Object>) session.getAttribute("loginInfo");
-		if(loginInfo != null) {
-			
+		loginInfo = (HashMap<String, Object>) session.getAttribute("loginInfo");		
+		
+		if(loginInfo != null) {			
 			HashMap<String, Object> boardInfo = boardService.selectBoardDetail(boardIdx);			
 			model.addAttribute("boardIdx", boardIdx); // 추후 게시글에서 새로운 기능을 만들 때 확장성을 위해 idx값 따로 넘겨놓기
 			model.addAttribute("boardInfo", boardInfo);
-						
-			return "board/boardDetail";
 			
-		}else {
+			// model에 login 정보 담아주기 - 다른 id가 작성한 게시글에 수정, 삭제 버튼 안보이게 하기 위해
+			model.addAttribute("loginInfo", loginInfo); 
+						
+			return "board/boardDetail";			
+		}else {			
 			return "redirect:/login.do";
-		}
-		
-		
+		}		
 	}
 	
+	// 데이터를 조회해서 json으로 넘겨주는 용도 (ajax에서 사용)
+	@RequestMapping("/board/getBoardDetail.do")
+	public ModelAndView getBoardDetail(@RequestParam(name="boardIdx") int boardIdx) {
+		ModelAndView mv = new ModelAndView();
+		
+		HashMap<String, Object> boardInfo = boardService.selectBoardDetail(boardIdx);
+		
+		mv.addObject("boardInfo", boardInfo);
+		mv.setViewName("jsonView");
+		return mv;
+	}	
+	
 	@RequestMapping("/board/registBoard.do")
-	public String registBoard(HttpSession session, Model model, @RequestParam(name="flag") String flag) {
+	public String registBoard(HttpSession session, Model model, @RequestParam HashMap<String, Object> paramMap) {
 		HashMap<String, Object> loginInfo = null;
 		loginInfo = (HashMap<String, Object>) session.getAttribute("loginInfo");
+		
 		if(loginInfo != null) {
+			String flag = paramMap.get("flag").toString();
 			model.addAttribute("flag", flag);
+			
+			if("U".equals(flag)) {
+				model.addAttribute("boardIdx", paramMap.get("boardIdx").toString());
+			}			
 			return "board/registBoard";
 		}else {
 			return "redirect:/login.do";
@@ -93,12 +112,29 @@ public class BoardController {
 	@RequestMapping("/board/saveBoard.do")
 	public ModelAndView saveBoard(@RequestParam HashMap<String, Object> paramMap, HttpSession session) {
 		ModelAndView mv = new ModelAndView();
+		
 		int resultChk = 0;
 		
 		HashMap<String, Object> sessionInfo = (HashMap<String, Object>) session.getAttribute("loginInfo");
 		paramMap.put("memberId", sessionInfo.get("id").toString());
 		
 		resultChk = boardService.saveBoard(paramMap);
+		
+		mv.addObject("resultChk", resultChk);
+		mv.setViewName("jsonView");
+		return mv;
+	}
+	
+	@RequestMapping("/board/deleteBoard.do")
+	public ModelAndView deleteBoard(@RequestParam HashMap<String, Object> paramMap, HttpSession session) {
+		ModelAndView mv = new ModelAndView();
+		
+		int resultChk = 0;
+		
+		HashMap<String, Object> sessionInfo = (HashMap<String, Object>) session.getAttribute("loginInfo");
+		paramMap.put("memberId", sessionInfo.get("id").toString());
+		
+		resultChk = boardService.deleteBoard(paramMap);
 		
 		mv.addObject("resultChk", resultChk);
 		mv.setViewName("jsonView");

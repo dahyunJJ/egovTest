@@ -1,5 +1,6 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -22,36 +23,73 @@
 </style>
 <script type="text/javascript">
 	$(document).ready(function(){
-		$("#btn_save").on('click', function(){
-			fn_save();
+		// 로그인 아이디와 게시글 작성 아이디가 다를때, 수정과 삭제 버튼 처리 방법 2
+		/* var loginId = "${loginInfo.id}";
+		var createId = "${boardInfo.createId}";
+		if(loginId != createId) {
+			$("#btn_update").hide();
+			$("#btn_delete").hide();
+		} else {
+			$("#btn_update").show();
+			$("#btn_delete").show();
+		} */
+		
+		$("#btn_update").on('click', function(){
+			fn_update();
+		});
+		
+		$("#btn_delete").on('click', function(){
+			fn_delete();
 		});
 		
 		$("#btn_list").on('click', function(){
 			location.href = "/board/boardList.do"
 		});
-	});
+	});	
 	
-	function fn_save(){
-		var frm = $("#saveFrm").serialize();
-		$.ajax({
-		    url: '/board/saveBoard.do',
-		    method: 'post',
-		    data : frm,
-		    dataType : 'json',
-		    success: function (data, status, xhr) {
-		    	
-		    },
-		    error: function (data, status, err) {
-		    	console.log(err);
-		    }
-		});
+	function fn_update() {
+		$("#flag").val("U");
+		var frm = $("#saveFrm");		
+		frm.attr("method", "POST");
+		frm.attr("action", "/board/registBoard.do");
+		frm.submit();
 	}
+	
+	function fn_delete() {
+		if(confirm("삭제하시겠습니까?")) {
+			
+			// boardIdx를 넘기는 4가지 방법
+			var frm = $("#saveFrm").serialize();
+			// var boardIdx = "${boardIdx}" 
+			// var boardIdx = "${boardInfo.boardIdx}"
+			// var boardIdx = $("#boardIdx").val();
+			
+			$.ajax({
+			    url: '/board/deleteBoard.do',
+			    method: 'post',
+			    data : frm, // frm 전부 넘기지 않을거면 {'boardIdx' : boardIdx},
+			    dataType : 'json',
+			    success: function (data, status, xhr) {
+			    	if(data.resultChk > 0){
+			    		alert("삭제되었습니다.");
+			    		location.href="/board/boardList.do";
+			    	}else{
+			    		alert("삭제에 실패하였습니다.");
+			    	}
+			    },
+			    error: function (data, status, err) {
+			    	console.log(err);
+			    }
+			});
+		}
+	}
+	
 </script>
 </head>
 <body>
 	<div>
 		<form id="saveFrm" name="saveFrm">
-			<input type="hidden" id="statusFlag" name="statusFlag" value="${flag}"/>
+			<input type="hidden" id="flag" name="flag" value="${flag}"/>
 			<input type="hidden" id="boardIdx" name="boardIdx" value="${boardIdx }"/>
 			<table style="height:auto; width:100%;" >
 				<colgroup>
@@ -99,7 +137,11 @@
 		</form>
 	</div>
 	<div style="float:right;">
-		<input type="button" id="btn_update" name="btn_update" value="수정"/>
+		<!-- 로그인 아이디와 게시글 작성 아이디가 다를때, 수정과 삭제 버튼 처리 방법 1 --> 
+		<c:if test = "${loginInfo.id == boardInfo.createId }" >
+			<input type="button" id="btn_update" name="btn_update" value="수정"/>
+			<input type="button" id="btn_delete" name="btn_delete" value="삭제"/>
+		</c:if>
 		<input type="button" id="btn_list" name="btn_list" value="목록"/>
 	</div>
 </body>
