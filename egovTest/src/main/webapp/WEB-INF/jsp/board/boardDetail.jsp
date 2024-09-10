@@ -34,6 +34,8 @@
 			$("#btn_delete").show();
 		} */
 		
+		fn_getReply("${boardInfo.boardIdx}");
+		
 		$("#btn_update").on('click', function(){
 			fn_update();
 		});
@@ -44,6 +46,10 @@
 		
 		$("#btn_list").on('click', function(){
 			location.href = "/board/boardList.do"
+		});
+		
+		$("#btn_reply_save").on('click', function(){
+			fn_comment();
 		});
 	});	
 	
@@ -82,6 +88,133 @@
 			    }
 			});
 		}
+	}
+	
+	// 댓글 영역 
+	// 댓글 목록 보여주기
+	function fn_getReply(boardIdx){
+		$.ajax({
+		    url: '/board/getBoardReply.do',
+		    method: 'post',
+		    data : { "boardIdx" : boardIdx},
+		    dataType : 'json',
+		    success: function (data, status, xhr) {
+		    	var replyHtml = '';
+		    	if(data.replyList.length > 0){
+		    		for(var i=0; i<data.replyList.length; i++){
+		    			// replyIdx 값을 div에 넣어준 이유 : 특정 댓글 div만 삭제 될 수 있게 하려고
+		    			replyHtml += '<div id="reply_'+data.replyList[i].replyIdx+'" style="width:90%;">';
+			    		replyHtml += '<span>';
+			    		if(data.replyList[i].replyLevel > 0){
+			    			for(var j=0; j<data.replyList[i].replyLevel; j++){
+				    			replyHtml += '=';
+				    		}
+			    			replyHtml+='=>';
+			    		}
+			    		replyHtml += data.replyList[i].createId;
+			    		replyHtml += '</span></br>';
+			    		replyHtml += '<span>';
+			    		replyHtml += data.replyList[i].replyContent;
+			    		replyHtml += '</span></br>';
+			    		replyHtml += '<span>';
+			    		replyHtml += data.replyList[i].createDate;
+			    		replyHtml += '<a href="javascript:fn_replyInsert(\''+data.replyList[i].replyIdx+'\');" style="float:right;">';
+			    		replyHtml += '답글달기';
+			    		replyHtml += '</a><br>';
+			    		replyHtml += '<a href="javascript:fn_replyDelete(\''+data.replyList[i].replyIdx+'\');" style="float:right;">';
+			    		replyHtml += '삭제';
+			    		replyHtml += '</a>';
+			    		replyHtml += '</span></br>';
+			    		replyHtml += '</div>';	
+		    		}
+		    	}else{
+		    		
+		    		replyHtml += '댓글이 존재하지 않습니다.';
+		    	}
+		    	$("#replyDiv").html(replyHtml);
+		    },
+		    error: function (data, status, err) {
+		    	console.log(err);
+		    }
+		});
+	}
+	
+	function fn_replyInsert(replyIdx){
+		
+	}
+	
+	function fn_replyInsertSave(replyIdx){
+		var boardIdx = $("#boardIdx").val();
+		var replyContent = $("#replyContent_"+replyIdx).val();
+		$.ajax({
+		    url: '/board/saveBoardReply.do',
+		    method: 'post',
+		    data : { 
+		    	"boardIdx" : boardIdx,
+		    	"replyIdx" : replyIdx,
+		    	"replyContent" : replyContent
+		    },
+		    dataType : 'json',
+		    success: function (data, status, xhr) {
+		    	if(data.resultChk > 0){
+		    		alert("등록되었습니다.");
+		    		fn_getReply(boardIdx);
+		    	}else{
+		    		alert("등록에 실패하였습니다.");
+		    	}
+		    },
+		    error: function (data, status, err) {
+		    	console.log(status);
+		    }
+		});
+	}
+	
+	// 댓글 등록
+	function fn_comment(){
+		var boardIdx = $("#boardIdx").val();
+		var replyContent = $("#replyContent").val();
+		$.ajax({
+		    url: '/board/saveBoardReply.do',
+		    method: 'post',
+		    data : { 
+		    	"boardIdx" : boardIdx,
+		    	"replyContent" : replyContent
+		    },
+		    dataType : 'json',
+		    success: function (data, status, xhr) {
+		    	if(data.resultChk > 0){
+		    		alert("등록되었습니다.");
+		    		// fn_getReply(boardIdx);
+		    	}else{
+		    		alert("등록에 실패하였습니다.");
+		    	}
+		    },
+		    error: function (data, status, err) {
+		    	console.log(status);
+		    }
+		});
+	}
+	
+	function fn_replyDelete(replyIdx){
+		$.ajax({
+		    url: '/board/deleteBoardReply.do',
+		    method: 'post',
+		    data : { 
+		    	"replyIdx" : replyIdx
+		    },
+		    dataType : 'json',
+		    success: function (data, status, xhr) {
+		    	if(data.resultChk > 0){
+		    		alert("삭제되었습니다.");
+		    		fn_getReply(boardIdx);
+		    	}else{
+		    		alert("삭제에 실패하였습니다.");
+		    	}
+		    },
+		    error: function (data, status, err) {
+		    	console.log(status);
+		    }
+		});		
 	}
 	
 </script>
@@ -136,13 +269,22 @@
 			</table>
 		</form>
 	</div>
-	<div style="float:right;">
+	<div style="float:right; width:100%;">
 		<!-- 로그인 아이디와 게시글 작성 아이디가 다를때, 수정과 삭제 버튼 처리 방법 1 --> 
 		<c:if test = "${loginInfo.id == boardInfo.createId }" >
-			<input type="button" id="btn_update" name="btn_update" value="수정"/>
-			<input type="button" id="btn_delete" name="btn_delete" value="삭제"/>
+			<input type="button" id="btn_delete" name="btn_delete" value="삭제" style="float:right;"/>
+			<input type="button" id="btn_update" name="btn_update" value="수정" style="float:right;"/>
 		</c:if>
-		<input type="button" id="btn_list" name="btn_list" value="목록"/>
+		<input type="button" id="btn_list" name="btn_list" value="목록" style="float:right;"/>
+	</div>
+	
+	<!-- 댓글 영역 -->
+	<div style="width:100%; margin:0px 0px 0px 9%;">
+		<h4>댓글</h4>
+		<input type="text" id="replyContent" name="replyContent" style="width:87%; margin:0 0px 10px 0px;" placeholder="댓글을 입력해주세요."/>
+		<input type="button" id="btn_reply_save" name="btn_reply_save" value="등록"/>
+	</div>
+	<div style="width:100%; margin:0px 0px 0px 9%;" id="replyDiv" name="replyDiv">
 	</div>
 </body>
 </html>

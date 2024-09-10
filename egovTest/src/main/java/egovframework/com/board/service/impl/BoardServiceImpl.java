@@ -52,6 +52,16 @@ public class BoardServiceImpl extends EgovAbstractServiceImpl implements BoardSe
 		return boardDAO.deleteBoard(paramMap);
 	}
 
+	@Override
+	public int insertReply(HashMap<String, Object> paramMap) {
+		return boardDAO.insertReply(paramMap);
+	}
+
+	@Override
+	public List<HashMap<String, Object>> selectBoardReply(HashMap<String, Object> paramMap) {
+		return boardDAO.selectBoardReply(paramMap);
+	}
+
 	
 	
 }

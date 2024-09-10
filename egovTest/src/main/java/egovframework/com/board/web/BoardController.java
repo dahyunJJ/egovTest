@@ -140,5 +140,34 @@ public class BoardController {
 		mv.setViewName("jsonView");
 		return mv;
 	}
+	
+	// 댓글 등록
+	@RequestMapping("/board/saveBoardReply.do")
+	public ModelAndView saveBoardReply(@RequestParam HashMap<String, Object> paramMap, HttpSession session) {
+		ModelAndView mv = new ModelAndView();
+		
+		HashMap<String, Object> sessionInfo = (HashMap<String, Object>) session.getAttribute("loginInfo");
+		paramMap.put("memberId", sessionInfo.get("id").toString());
+		
+		int resultChk = 0;
+		
+		resultChk = boardService.insertReply(paramMap);
+		
+		mv.addObject("resultChk", resultChk);
+		mv.setViewName("jsonView");
+		return mv;
+	}
+	
+	// 댓글 목록
+	@RequestMapping("/board/getBoardReply.do")
+	public ModelAndView getBoardReply(@RequestParam HashMap<String, Object> paramMap) {
+		ModelAndView mv = new ModelAndView();
+		
+		List<HashMap<String, Object>> replyList = boardService.selectBoardReply(paramMap);
+		
+		mv.addObject("replyList", replyList);
+		mv.setViewName("jsonView");
+		return mv;
+	}
 
 }
