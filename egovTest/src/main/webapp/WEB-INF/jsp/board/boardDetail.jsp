@@ -140,7 +140,10 @@
 	}
 	
 	function fn_replyInsert(replyIdx){
-		
+		var innerHtml = '';
+		innerHtml+='<input type="text" id="replyContent_'+replyIdx+'" name="replyContent_'+replyIdx+'" "placeholder="답글을 입력하세요." value=""/>';
+		innerHtml+='<input type="button" id="replyInsert_'+replyIdx+'" name="replyInsert_'+replyIdx+'" value="등록" onclick="javascript:fn_replyInsertSave(\''+replyIdx+'\');"/>';
+		$("#reply_"+replyIdx).append(innerHtml);
 	}
 	
 	function fn_replyInsertSave(replyIdx){
@@ -217,10 +220,48 @@
 		});		
 	}
 	
+	function fn_getFileList(){
+		// /board/getFileList.do
+			var fileGroupIdx = "${boardInfo.fileGroupIdx}";
+		$.ajax({
+		    url: '/board/getFileList.do',
+		    method: 'post',
+		    data : { 
+		    	"fileGroupIdx" : fileGroupIdx
+		    },
+		    dataType : 'json',
+		    success: function (data, status, xhr) {
+		    	var innerHtml = '';
+		    	for(var i=0; i<data.fileList.length; i++){
+		    		innerHtml += '<span>';
+		    		innerHtml += '<a href="javascript:fn_down(\''+data.fileList[i].saveFilePath+'\',\''+data.fileList[i].saveFileName+'\');">';
+			    	innerHtml += data.fileList[i].fileOriginalName;
+			    	innerHtml += '</a></span><br>';	
+		    	}
+		    	$("#boardFileList").html(innerHtml);
+		    },
+		    error: function (data, status, err) {
+		    	console.log(status);
+		    }
+		});
+	}
+	
+	function fn_down(filePath, fileName){
+		$("#fileName").val(fileName);
+		$("#filePath").val(filePath)
+		var frm = $("#fileFrm");
+		frm.attr("action", "/board/getFileDown.do");
+		frm.submit();
+	}
+	
 </script>
 </head>
 <body>
 	<div>
+		<form id="fileFrm" name="fileFrm" method="POST">
+			<input type="hidden" id="fileName" name="fileName" value=""/>
+			<input type="hidden" id="filePath" name="filePath" value=""/>
+		</form>
 		<form id="saveFrm" name="saveFrm">
 			<input type="hidden" id="flag" name="flag" value="${flag}"/>
 			<input type="hidden" id="boardIdx" name="boardIdx" value="${boardIdx }"/>
