@@ -34,6 +34,7 @@
 			$("#btn_delete").show();
 		} */
 		
+		fn_getFileList();
 		fn_getReply("${boardInfo.boardIdx}");
 		
 		$("#btn_update").on('click', function(){
@@ -221,7 +222,6 @@
 	}
 	
 	function fn_getFileList(){
-		// /board/getFileList.do
 			var fileGroupIdx = "${boardInfo.fileGroupIdx}";
 		$.ajax({
 		    url: '/board/getFileList.do',
@@ -305,18 +305,22 @@
 							<input type="text" class="text" id="updateDate" name="updateDate" value="${boardInfo.updateDate }" readonly />
 						</td>
 					</tr>
+					<tr>
+						<th>첨부파일</th>
+						<td><div id="boardFileList" name="boardFileList"></div></td>
+					</tr>
 				</tbody>
 				
 			</table>
 		</form>
 	</div>
 	<div style="float:right; width:100%;">
+		<input type="button" id="btn_list" name="btn_list" value="목록" style="float:right;"/>
 		<!-- 로그인 아이디와 게시글 작성 아이디가 다를때, 수정과 삭제 버튼 처리 방법 1 --> 
 		<c:if test = "${loginInfo.id == boardInfo.createId }" >
 			<input type="button" id="btn_delete" name="btn_delete" value="삭제" style="float:right;"/>
 			<input type="button" id="btn_update" name="btn_update" value="수정" style="float:right;"/>
 		</c:if>
-		<input type="button" id="btn_list" name="btn_list" value="목록" style="float:right;"/>
 	</div>
 	
 	<!-- 댓글 영역 -->

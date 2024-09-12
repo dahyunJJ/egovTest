@@ -54,7 +54,7 @@
 		) VALUES (
 			#{boardTitle},
 			#{boardContent},
-			NULL,
+			(SELECT ifnull(MAX(A.file_group_idx), 0)+1 FROM tb_board A),
 			#{memberId},
 			#{memberId},
 			'Y'
@@ -65,7 +65,6 @@
 		UPDATE tb_board
 		SET board_title = #{boardTitle},
 			board_content = #{boardContent},
-			file_group_idx = NULL,
 		    update_id = #{memberId},
 		    update_date = CURRENT_TIMESTAMP()
 		WHERE board_idx = #{boardIdx}
@@ -107,7 +106,7 @@
 				use_yn
 		) VALUES (
 				#{boardIdx},
-		 	    #{parentReplyIdx},
+		 	    #{replyIdx},
 				#{replyContent},
 				#{memberId},
 				CURRENT_TIMESTAMP(),
@@ -155,5 +154,69 @@
 		from cte
 		order by convert(substring_index(path, '-', 1), unsigned) desc, path
 	</select>
+	
+	<!-- 파일 영역 -->
+	<select id="getFileGroupMaxIdx" resultType="int">
+		SELECT ifnull(MAX(file_group_idx), 0)
+		FROM tb_board
+	</select>
+	
+	<select id="getFileGroupIdx" parameterType="java.util.HashMap" resultType="int">
+		SELECT file_group_idx
+		FROM tb_board
+		WHERE board_idx = #{boardIdx}
+	</select>
+	
+	<insert id="insertFileAttr"  parameterType="java.util.HashMap">
+		INSERT INTO tb_file_attr(
+			file_group_idx,
+			file_original_name,
+			save_file_name,
+			save_file_path,
+			file_size,
+			file_ext,
+			create_id,
+			create_date,
+			update_id,
+			update_date
+		) VALUES (
+			#{fileGroupIdx},
+			#{originalFileName},
+			#{saveFileName},
+			#{saveFilePath},
+			#{fileSize},
+			#{fileExt},
+			#{memberId},
+			CURRENT_TIMESTAMP(),
+			#{memberId},
+			CURRENT_TIMESTAMP()
+		)
+		
+	</insert>
+	
+	<select id="selectFileList" parameterType="int" resultType="java.util.HashMap">
+		SELECT file_idx AS fileIdx,
+			   file_group_idx AS fileGroupIdx,
+			   file_original_name AS fileOriginalName,
+			   save_file_name AS saveFileName,
+			   save_file_path AS saveFilePath,
+			   file_size AS filSize,
+			   file_ext AS fileExt,
+			   create_id AS createId,
+			   DATE_FORMAT(create_date, '%Y-%m-%d %H:%i:%s') AS createDate,
+			   update_id AS updateId,
+			   DATE_FORMAT(update_date, '%Y-%m-%d %H:%i:%s') AS updateDate
+		FROM tb_file_attr
+		WHERE file_group_idx = #{fileGroupIdx}
+		AND use_yn = 'Y'
+	</select>
+	
+	<update id="deleteFileAttr" parameterType="java.util.HashMap">
+		UPDATE tb_file_attr
+		SET use_yn = 'N'
+		WHERE file_idx in (${deleteFiles})
+		<!-- in을 쓰는 이유 : deleteFiles가 배열이기 때문에 값이 여러개일 수 있음 -->
+		<!-- 배열에 $를 쓰는 이유 : #은 값 앞뒤로 ' '가 붙는다 -->
+	</update>
 
 </mapper>

@@ -24,9 +24,9 @@
 /* 파일 업로드 관련 변수 */
 var fileCnt = 0;
 var totalCnt = 20;
-var fileNum = 0;
+var fileNum = 0; // 현재 등록되어 있는 파일 갯수
 var content_files = new Array();
-var deleteFiles = new Array();
+var deleteFiles = new Array(); // 삭제 할 파일을 가지고 있는 배열
 /* 파일 업로드 관련 변수 */
 
 	$(document).ready(function(){
@@ -61,9 +61,9 @@ var deleteFiles = new Array();
 				reader.onload = function (e){
 					content_files.push(f);
 					$("#boardFileList").append(
-								'<div id="file'+fileNum+'" style="float:left; width:100%;">'
+								'<div id="file'+fileNum+'"style="float:left; width:100%;">'
 								+'<font style="font-size:12px">' + f.name + '</font>'
-								+'<a href="javascript:fileDelete(\'file'+fileNum+'\')">X</a>'
+								+'<a href="javascript:fileDelete(\'file'+fileNum+'\',\'\');">X</a>'
 								+'</div>'
 					);
 					fileNum++;
@@ -75,9 +75,16 @@ var deleteFiles = new Array();
 		});
 	});
 	
-	function fileDelete(fileNum){
+	function fileDelete(fileNum, fileIdx){
 		var no = fileNum.replace(/[^0-9]/g, "");
-		content_files[no].is_delete = true;
+		
+		// 등록 완료 된 파일을 삭제하기 위해 fileIdx를 가져와서 삭제할 배열에 push 
+		if(fileIdx != "") {
+			deleteFiles.push(fileIdx);
+		} else {
+			content_files[no].is_delete = true;
+		}
+		
 		$("#"+fileNum).remove();
 		fileCnt--;
 	}
@@ -96,6 +103,37 @@ var deleteFiles = new Array();
 		    	
 		    	$("#boardTitle").val(data.boardInfo.boardTitle);
 		    	$("#boardContent").val(data.boardInfo.boardContent);
+		    	
+		    	// 업로드한 파일 목록 불러오기
+		    	fn_filelist(data.boardInfo.fileGroupIdx);
+		    	
+		    },
+		    error: function (data, status, err) {
+		    	console.log(err);
+		    }
+		});
+	}
+	
+	function fn_filelist(fileGroupIdx) {
+		$.ajax({
+		    url: '/board/getFileList.do',
+		    method: 'post',
+		    data : {
+		    	'fileGroupIdx' : fileGroupIdx
+		    },
+		    dataType : 'json',
+		    success: function (data, status, xhr) {
+				if(data.fileList.length > 0){
+					for(var i=0; i<data.fileList.length; i++){
+						$("#boardFileList").append(
+								'<div id="file'+i+'" style="float:left; width: 100%;">'
+								+'<font style="font-size:12px">' + data.fileList[i].fileOriginalName + '</font>'
+								+'<a href="javascript:fileDelete(\'file'+i+'\',\''+data.fileList[i].fileIdx+'\');">X</a>'
+								+'</div>'
+						);
+					}
+					fileNum = data.fileList.length;
+		    	}
 		    },
 		    error: function (data, status, err) {
 		    	console.log(err);
@@ -113,6 +151,11 @@ var deleteFiles = new Array();
 			if(!content_files[x].is_delete){
 				formData.append("fileList", content_files[x]); 
 			}
+		}
+		
+		// formData에 등록된 파일 중 삭제를 할 파일을 추가
+		if(deleteFiles.length > 0) {
+			formData.append("deleteFiles", deleteFiles);			
 		}
 		
 		$.ajax({

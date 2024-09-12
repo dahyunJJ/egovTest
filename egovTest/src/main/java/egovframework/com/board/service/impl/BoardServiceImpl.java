@@ -36,16 +36,24 @@ public class BoardServiceImpl extends EgovAbstractServiceImpl implements BoardSe
 		int resultChk = 0;
 		
 		String flag = paramMap.get("statusFlag").toString();
+		int fileGroupIdx = 0;
 		
 		if ("I".equals(flag)) {
 			resultChk = boardDAO.insertBoard(paramMap);
+			fileGroupIdx = boardDAO.getFileGroupMaxIdx();
 			
 		} else if ("U".equals(flag)) {
 			resultChk = boardDAO.updateBoard(paramMap);
+			fileGroupIdx = boardDAO.getFileGroupIdx(paramMap);
+			
+			if(paramMap.get("deleteFiles") != null) {
+				resultChk = boardDAO.deleteFileAttr(paramMap);				
+			}
 		}
 		
 		// file을 저장할 위치 지정하기
 		String filePath = "/ictsaeil/egovTest";
+		int index = 0;
 		
 		// get(0)을 한 이유 : 첫번째 파일이 없으면 두번째 파일도 없기 때문에 (0)으로 설정
 		if(multipartFile.size() > 0 && !multipartFile.get(0).getOriginalFilename().equals("")) {
@@ -66,8 +74,20 @@ public class BoardServiceImpl extends EgovAbstractServiceImpl implements BoardSe
 					
 					// fileExt : 파일의 확장자만 뽑아내기
 					String fileExt = FilenameUtils.getExtension(file.getOriginalFilename());
-					File saveFile = new File(filePath, "file_"+today+"."+fileExt);
+					File saveFile = new File(filePath, "file_" + today + "_" + index + "." + fileExt);
 					file.transferTo(saveFile); // multipartFile로 받아온 file을 saveFile로 바꿔주기
+					
+					HashMap<String, Object> uploadFile = new HashMap<String, Object>();
+					uploadFile.put("fileGroupIdx", fileGroupIdx);
+					uploadFile.put("originalFileName", file.getOriginalFilename());
+					uploadFile.put("saveFileName", "file_" + today + "_" + index + "." + fileExt);
+					uploadFile.put("saveFilePath", filePath);
+					uploadFile.put("fileSize", file.getSize());
+					uploadFile.put("fileExt", fileExt);
+					uploadFile.put("memberId", paramMap.get("memberId").toString());
+					resultChk = boardDAO.insertFileAttr(uploadFile);
+					
+					index++;
 					
 				} catch(Exception e) {
 					e.printStackTrace();
@@ -96,6 +116,11 @@ public class BoardServiceImpl extends EgovAbstractServiceImpl implements BoardSe
 	@Override
 	public List<HashMap<String, Object>> selectBoardReply(HashMap<String, Object> paramMap) {
 		return boardDAO.selectBoardReply(paramMap);
+	}
+
+	@Override
+	public List<HashMap<String, Object>> selectFileList(int fileGroupIdx) {
+		return boardDAO.selectFileList(fileGroupIdx);
 	}
 
 	
