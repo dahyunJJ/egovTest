@@ -89,6 +89,7 @@ var deleteFiles = new Array(); // 삭제 할 파일을 가지고 있는 배열
 		fileCnt--;
 	}
 	
+	// 수정 버튼 눌렀을 때, 데이터가 보이도록 처리하기 위해 필요
 	function fn_detail(boardIdx) {
 		$.ajax({
 		    url: '/board/getBoardDetail.do',
