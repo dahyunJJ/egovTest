@@ -119,9 +119,15 @@ public class BoardServiceImpl extends EgovAbstractServiceImpl implements BoardSe
 	}
 
 	@Override
+	public int deleteReply(HashMap<String, Object> paramMap) {
+		return boardDAO.deleteReply(paramMap);
+	}
+	
+	@Override
 	public List<HashMap<String, Object>> selectFileList(int fileGroupIdx) {
 		return boardDAO.selectFileList(fileGroupIdx);
 	}
+
 
 	
 	

@@ -178,6 +178,22 @@ public class BoardController {
 		return mv;
 	}
 	
+	@RequestMapping("/board/deleteBoardReply.do")
+	public ModelAndView deleteBoardReply(@RequestParam HashMap<String, Object> paramMap, HttpSession session) {
+		ModelAndView mv = new ModelAndView();
+		
+		HashMap<String, Object> sessionInfo = (HashMap<String, Object>) session.getAttribute("loginInfo");
+		paramMap.put("memberId", sessionInfo.get("id").toString());
+		
+		int resultChk = 0;
+		
+		resultChk = boardService.deleteReply(paramMap);
+		
+		mv.addObject("resultChk", resultChk);
+		mv.setViewName("jsonView");
+		return mv;
+	}
+	
 	// 업로드한 파일 목록을 게시글에 보여주기
 	@RequestMapping("/board/getFileList.do")
 	public ModelAndView getFileList(@RequestParam(name="fileGroupIdx") int fileGroupIdx) {

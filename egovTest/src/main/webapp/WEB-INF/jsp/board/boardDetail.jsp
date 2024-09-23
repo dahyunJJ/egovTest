@@ -200,25 +200,29 @@
 	}
 	
 	function fn_replyDelete(replyIdx){
-		$.ajax({
-		    url: '/board/deleteBoardReply.do',
-		    method: 'post',
-		    data : { 
-		    	"replyIdx" : replyIdx
-		    },
-		    dataType : 'json',
-		    success: function (data, status, xhr) {
-		    	if(data.resultChk > 0){
-		    		alert("삭제되었습니다.");
-		    		fn_getReply(boardIdx);
-		    	}else{
-		    		alert("삭제에 실패하였습니다.");
-		    	}
-		    },
-		    error: function (data, status, err) {
-		    	console.log(status);
-		    }
-		});		
+		var boardIdx = $("#boardIdx").val();
+		
+		if(confirm("삭제하시겠습니까?")) {
+			$.ajax({
+			    url: '/board/deleteBoardReply.do',
+			    method: 'post',
+			    data : { 
+			    	"replyIdx" : replyIdx
+			    },
+			    dataType : 'json',
+			    success: function (data, status, xhr) {
+			    	if(data.resultChk > 0){
+			    		alert("삭제되었습니다.");
+			    		fn_getReply(boardIdx);
+			    	}else{
+			    		alert("삭제에 실패하였습니다.");
+			    	}
+			    },
+			    error: function (data, status, err) {
+			    	console.log(status);
+			    }
+			});
+		}
 	}
 	
 	function fn_getFileList(){

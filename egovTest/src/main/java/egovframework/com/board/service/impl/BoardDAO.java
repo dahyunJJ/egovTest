@@ -42,6 +42,10 @@ public class BoardDAO extends EgovAbstractMapper{
 		return selectList("selectBoardReply", paramMap);
 	}
 	
+	public int deleteReply(HashMap<String, Object> paramMap) {
+		return update("deleteReply", paramMap);
+	}
+	
 	// 파일 영역
 	public int getFileGroupMaxIdx() {
 		return selectOne("getFileGroupMaxIdx");
